@@ -468,9 +468,9 @@ class LinkedinAutomation:
         json_object = json.loads(json_string)
         return json_object
         
-    def extract_founder_and_manager_profiles_based_on_keywords(self, dict):        
+    def extract_founder_and_manager_profiles_based_on_keywords(self, dict, for_commercial=False):        
         profiles_column = str(dict['profiles']).strip()
-        company_name = str(dict['name']).strip()
+        company_name = str(dict['company_name']).strip()
             
         try:
             if company_name : # == "Groupe SYD" :
@@ -488,7 +488,7 @@ class LinkedinAutomation:
                         profiles.append(profile)
 
                     #valid_profiles = profiles
-                    valid_profiles = self.get_valid_profiles_from_profiles(profiles)
+                    valid_profiles = self.get_valid_profiles_from_profiles(profiles, for_commercial)
 
                     # print(f'='*150)
                     # for i in valid_profiles:
@@ -503,12 +503,12 @@ class LinkedinAutomation:
             print(f"Errooooor at {company_name}")
             return {"status": False, "data": e.args[0]}
 
-    def get_valid_profiles_from_profiles(self, profiles, use_OpenAI_api = False):
+    def get_valid_profiles_from_profiles(self, profiles, for_commercial, use_OpenAI_api = False):
         profiles_for_openAI = []
         valid_profiles = []
         
         for profile in profiles:
-            result=self.is_founder_director(profile["profile_description"])
+            result=self.is_founder_director(profile["profile_description"], for_commercial)
             if result['response']:
                 print(f'+++ valid profil : {profile["profile_description"]}')
                 valid_profiles.append(profile)
@@ -544,24 +544,41 @@ class LinkedinAutomation:
         final_valid_profiles = valid_profiles + founder_profiles
         return final_valid_profiles
 
-    def is_founder_director(self, description):
-        keywords = [
-            "general director", "directeur général", "directrice générale",
-            "commercial director", "directeur commercial", "directrice commercial", "DR commercial", "head of sales",
-            " CEO", " PDG", " CFO", "CEO ", "PDG ", "CFO ",
-            "president", "président", "présidente",
-            "founder", "fondateur", "fondatrice",
-            "co-founder", "Co-fondatrice", "Co-fondateur",
-            " CTO", "CTO ",
-            "Chief", "Chef d'entreprise"
-            "HR director", "DRH", "directeur RH", "directrice RH", "DHR",
-            "partner", "associé", "associée",
-            "owner",
-            "Investor", "investeur", "Entrepreneur"
-        ]
-
-        keywords_1 = ["CEO", "PDG", "CFO","CTO"]
+    def is_founder_director(self, description, for_commercial):
+        if not for_commercial:
+            keywords = [
+                "general director", "directeur général", "directrice générale",
+                "commercial director", "directeur commercial", "directrice commercial", "DR commercial", "head of sales",
+                " CEO", " PDG", " CFO", "CEO ", "PDG ", "CFO ",
+                "president", "président", "présidente",
+                "founder", "fondateur", "fondatrice",
+                "co-founder", "Co-fondatrice", "Co-fondateur",
+                " CTO", "CTO ",
+                "Chief", "Chef d'entreprise"
+                "HR director", "DRH", "directeur RH", "directrice RH", "DHR",
+                "partner", "associé", "associée",
+                "owner",
+                "Investor", "investeur", "Entrepreneur"
+            ]
     
+            keywords_1 = ["CEO", "PDG", "CFO","CTO"]
+        else:
+            keywords = [
+                "general director", "directeur général", "directrice générale",
+                "commercial director", "directeur commercial", "directrice commercial", "DR commercial", "head of sales", "chef des ventes",
+                "sales director", "directeur des ventes",
+                " CEO", " PDG", "CEO ", "PDG ",
+                "president", "président", "présidente",
+                "founder", "fondateur", "fondatrice",
+                "co-founder", "Co-fondatrice", "Co-fondateur",
+                "Chef d'entreprise"
+                "partner", "associé", "associée",
+                "owner",
+                "Investor", "investeur", "Entrepreneur"
+            ]
+    
+            keywords_1 = ["CEO", "PDG"]
+            
         # Exclude "product owner" explicitly
         if "product owner" in str(description).lower():
             return {"response": False}

@@ -177,8 +177,9 @@ class LinkedinAutomation:
     def get_linkedin_authentication(self, email = '', pwd = ''):
         
         url = 'https://www.linkedin.com/login/fr?fromSignIn=true&trk=guest_homepage-basic_nav-header-signin'
-        self.driver.get(url)
-        time.sleep(2)
+        if url != self.driver.current_url:
+            self.driver.get(url)
+        time.sleep(4)
         
         input_username = self.get_element('//*[@id="username"]')
         if input_username["status"]:
@@ -187,7 +188,7 @@ class LinkedinAutomation:
             input_username.send_keys(Keys.ENTER)
         else:
             print({"status": False, "data":input_username["data"] })
-        time.sleep(2)
+        time.sleep(4)
 
         input_password = self.get_element('//*[@id="password"]')
         if input_password["status"]:
